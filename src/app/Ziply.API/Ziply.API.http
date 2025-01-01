@@ -1,0 +1,6 @@
+@Ziply.API_HostAddress = http://localhost:5231
+
+GET {{Ziply.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
