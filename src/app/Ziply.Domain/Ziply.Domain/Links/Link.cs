@@ -1,4 +1,5 @@
 ﻿using Ziply.Domain.Abstractions;
+using Ziply.Domain.Links.Events;
 
 namespace Ziply.Domain.Links;
 public sealed class Link : Entity
@@ -35,15 +36,34 @@ public sealed class Link : Entity
     /// </summary>
     public DateTime LastUpdate { get; set; } = DateTime.Now;
 
-    public static Link Create(Guid userId, OriginalUrl originalUrl, ShortId shortId, Title? title, LinkMetaData? linkMetaData)
+    public static Link Create(Guid userId, OriginalUrl originalUrl, ShortId shortId, Title? title)
     {
-        return new Link(Guid.NewGuid())
+        var link = new Link(Guid.NewGuid())
         {
             OriginalUrl = originalUrl,
             ShortId = shortId,
             Title = title,
-            LinkMetaData = linkMetaData,
             UserId = userId,
         };
+        link.RaiseDomainEvent(new LinkCreatedDomainEvent(link.Id));
+        return link;
+    }
+
+    public Link Update(OriginalUrl originalUrl, ShortId shortId, Title? title)
+    {
+        if(OriginalUrl != originalUrl)
+        {
+            RaiseDomainEvent(new LinkOriginUrlChangedDomainEvent(Id));
+        }
+        OriginalUrl = originalUrl;
+        Title = title;
+        ShortId = shortId;
+        LastUpdate = DateTime.Now;
+        return this;
+    }
+
+    public void Remove()
+    {
+        RaiseDomainEvent(new LinkRemovedDomainEvent(Id));
     }
 }
